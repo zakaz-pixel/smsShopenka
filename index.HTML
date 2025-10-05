@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Мини‑ТЗ — Костюм</title>
+  <style>
+    :root {
+      --accent: #5b21b6;
+      --bg: #fafafa;
+      --text: #111;
+      --border: #ddd;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      margin: 0;
+      padding: 14px;
+      color: var(--text);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.3rem;
+      margin-bottom: 12px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea, button {
+      font-size: 1rem;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: white;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-weight: 600;
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111;
+    }
+
+    .checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .output {
+      margin-top: 20px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .copy-btn {
+      background: #2563eb;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #1c1c1e; color: #eee; }
+      input, select, textarea { background: #2c2c2e; color: #eee; border-color: #444; }
+      .output { background: #2c2c2e; border-color: #444; }
+      button.secondary { background: #3a3a3c; color: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Мини‑ТЗ для костюма</h1>
+
+  <form id="tzForm" onsubmit="return false;">
+    <div>
+      <label for="clientName">Имя клиента</label>
+      <input id="clientName" type="text" placeholder="Например: Иван Иванов" required>
+    </div>
+
+    <div>
+      <label for="suitType">Тип костюма</label>
+      <select id="suitType">
+        <option value="Классический">Классический</option>
+        <option value="Театральный">Театральный</option>
+        <option value="Карнавальный">Карнавальный</option>
+        <option value="Другое">Другое...</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="suitTypeOther">Если выбрано "Другое"</label>
+      <input id="suitTypeOther" type="text" placeholder="Например: косплей">
+    </div>
+
+    <div>
+      <label for="color">Цвет костюма</label>
+      <input id="color" type="text" placeholder="Чёрный, красный..." required>
+    </div>
+
+    <div>
+      <label for="cost">Стоимость (₽)</label>
+      <input id="cost" type="number" placeholder="10000" min="0">
+    </div>
+
+    <div>
+      <label for="dueDate">Срок сдачи</label>
+      <input id="dueDate" type="date">
+    </div>
+
+    <div>
+      <label for="comment">Комментарий (опционально)</label>
+      <textarea id="comment" placeholder="Особенности, мерки..."></textarea>
+    </div>
+
+    <div class="checkbox">
+      <input id="urgent" type="checkbox">
+      <label for="urgent">Срочный заказ</label>
+    </div>
+
+    <div class="actions">
+      <button id="generateBtn" type="button">Сформировать ТЗ</button>
+      <button id="copyBtn" type="button" class="copy-btn">Скопировать</button>
+      <button id="clearBtn" type="button" class="secondary">Очистить форму</button>
+    </div>
+  </form>
+
+  <div id="output" class="output">Мини‑ТЗ:
+Клиент:
+Тип костюма:
+Цвет:
+Стоимость:
+Срок сдачи:
+Срочный заказ:
+Комментарий:</div>
+
+  <script>
+    const fields = {
+      name: document.getElementById('clientName'),
+      type: document.getElementById('suitType'),
+      typeOther: document.getElementById('suitTypeOther'),
+      color: document.getElementById('color'),
+      cost: document.getElementById('cost'),
+      due: document.getElementById('dueDate'),
+      comment: document.getElementById('comment'),
+      urgent: document.getElementById('urgent')
+    };
+
+    const output = document.getElementById('output');
+    const genBtn = document.getElementById('generateBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function formatDate(d) {
+      if (!d) return '-';
+      const date = new Date(d);
+      if (isNaN(date)) return d;
+      return date.toLocaleDateString('ru-RU');
+    }
+
+    function buildText() {
+      let type = fields.type.value;
+      if (type === 'Другое' && fields.typeOther.value.trim()) {
+        type = fields.typeOther.value.trim();
+      }
+
+      return `Мини‑ТЗ:\nКлиент: ${fields.name.value.trim() || '-'}\nТип костюма: ${type || '-'}\nЦвет: ${fields.color.value.trim() || '-'}\nСтоимость: ${fields.cost.value ? fields.cost.value + ' ₽' : '-'}\nСрок сдачи: ${formatDate(fields.due.value)}\nСрочный заказ: ${fields.urgent.checked ? 'да' : 'нет'}\nКомментарий: ${fields.comment.value.trim() || '-'}`;
+    }
+
+    function render() {
+      output.textContent = buildText();
+    }
+
+    genBtn.onclick = render;
+
+    copyBtn.onclick = () => {
+      const text = buildText();
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      try {
+        document.execCommand('copy');
+        copyBtn.textContent = '✅ Скопировано';
+        setTimeout(() => (copyBtn.textContent = 'Скопировать'), 1500);
+      } catch {
+        alert('Скопируй вручную');
+      }
+      document.body.removeChild(temp);
+    };
+
+    clearBtn.onclick = () => {
+      if (confirm('Очистить форму?')) {
+        document.getElementById('tzForm').reset();
+        render();
+      }
+    };
+
+    render();
+  </script>
+</body>
+</html>
